@@ -1,28 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import { useParams } from "react-router-dom";
 // import { toast } from "react-toastify";
 // import api from "../apiService";
 import { Container, Button, Box, Grid, Stack, Typography } from "@mui/material";
-
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { addReadingList, getBookDetail } from "../components/book/bookSlice";
 
-
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;
 
 const BookDetailPage = () => {
-  const dispatch = useDispatch;
-  const bookDetail = useSelector((state) => state.book.bookDetail)
-  const status = useSelector((state) => state.book.status)
-  
-  
+  const dispatch = useDispatch();
+  const bookDetail = useSelector((state) => state.book.bookDetail);
+  const status = useSelector((state) => state.book.status);
+
+  const params = useParams();
+  const bookId = params.id;
+
+  useEffect(() => {
+    dispatch(getBookDetail(bookId));
+  }, [dispatch, bookId]);
+
   // const [loading, setLoading] = useState(false);
   // const [book, setBook] = useState(null);
   // const [addingBook, setAddingBook] = useState(false);
-  const params = useParams();
-  const bookId = params.id;
+  // const params = useParams();
+  // const bookId = params.id;
 
   // const addToReadingList = (book) => {
   //   setAddingBook(book);
@@ -37,6 +41,7 @@ const BookDetailPage = () => {
   //       toast.success("The book has been added to the reading list!");
   //     } catch (error) {
   //       toast.error(error.message);
+  //       console.log(error);
   //     }
   //     setLoading(false);
   //   };
@@ -57,18 +62,20 @@ const BookDetailPage = () => {
   //   fetchData();
   // }, [bookId]);
 
-  useEffect(() => {
-    dispatch(getBookDetail(bookId));
-  }, [dispatch, bookId]);
-
   return (
     <Container>
       {status ? (
-        <Box sx={{ textAlign: "center", color: "primary.main" }} >
+        <Box sx={{ textAlign: "center", color: "primary.main" }}>
           <ClipLoader color="#inherit" size={150} loading={true} />
         </Box>
       ) : (
-        <Grid container spacing={2} p={4} mt={5} sx={{ border: "1px solid black" }}>
+        <Grid
+          container
+          spacing={2}
+          p={4}
+          mt={5}
+          sx={{ border: "1px solid black" }}
+        >
           <Grid item md={4}>
             {bookDetail && (
               <img
@@ -97,16 +104,19 @@ const BookDetailPage = () => {
                 <Typography variant="body1">
                   <strong>Language:</strong> {bookDetail.language}
                 </Typography>
-                <Button variant="outlined" sx={{ width: "fit-content" }} onClick={() => dispatch(addReadingList(bookDetail))}>
+                <Button
+                  variant="outlined"
+                  sx={{ width: "fit-content" }}
+                  onClick={() => dispatch(addReadingList(bookDetail))}
+                >
                   Add to Reading List
                 </Button>
               </Stack>
             )}
           </Grid>
         </Grid>
-      )
-      }
-    </Container >
+      )}
+    </Container>
   );
 };
 

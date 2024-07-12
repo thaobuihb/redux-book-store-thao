@@ -6,8 +6,17 @@ import SearchForm from "../components/SearchForm";
 // import api from "../apiService";
 import { FormProvider } from "../form";
 import { useForm } from "react-hook-form";
-import { Container, Alert, Box, Card, Stack, CardMedia, CardActionArea, Typography, CardContent } from "@mui/material";
-
+import {
+  Container,
+  Alert,
+  Box,
+  Card,
+  Stack,
+  CardMedia,
+  CardActionArea,
+  Typography,
+  CardContent,
+} from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { fetchData } from "../components/book/bookSlice";
@@ -15,9 +24,10 @@ import { fetchData } from "../components/book/bookSlice";
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;
 
 const HomePage = () => {
-  const dispatch = useDispatch;
-  const status = useSelector ((state) => state.book.status);
-  const books = useSelector((state) => state.book.books)
+  const dispatch = useDispatch();
+  const status = useSelector((state) => state.book.status);
+  const books = useSelector((state) => state.book.books);
+
   // const [books, setBooks] = useState([]);
   const [pageNum, setPageNum] = useState(1);
   const totalPage = 10;
@@ -27,7 +37,7 @@ const HomePage = () => {
   const [query, setQuery] = useState("");
   // const [errorMessage, setErrorMessage] = useState("");
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleClickBook = (bookId) => {
     navigate(`/books/${bookId}`);
   };
@@ -35,8 +45,7 @@ const HomePage = () => {
   useEffect(() => {
     dispatch(fetchData({ pageNum, limit: 20, query }));
     console.log("query", query);
-  }, [dispatch, pageNum, query]);
-
+  }, [dispatch, pageNum, limit, query]);
 
   // useEffect(() => {
   //   const fetchData = async () => {
@@ -54,9 +63,9 @@ const HomePage = () => {
   //   };
   //   fetchData();
   // }, [pageNum, limit, query]);
-  //--------------form
+  // //--------------form
   const defaultValues = {
-    searchQuery: ""
+    searchQuery: "",
   };
   const methods = useForm({
     defaultValues,
@@ -65,10 +74,13 @@ const HomePage = () => {
   const onSubmit = (data) => {
     setQuery(data.searchQuery);
   };
+
   return (
     <Container>
       <Stack sx={{ display: "flex", alignItems: "center", m: "2rem" }}>
-        <Typography variant="h3" sx={{ textAlign: "center" }}>Book Store</Typography>
+        <Typography variant="h3" sx={{ textAlign: "center" }}>
+          Book Store
+        </Typography>
         {status && <Alert severity="danger">{status}</Alert>}
         <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
           <Stack
@@ -89,19 +101,26 @@ const HomePage = () => {
       </Stack>
       <div>
         {status ? (
-          <Box sx={{ textAlign: "center", color: "primary.main" }} >
+          <Box sx={{ textAlign: "center", color: "primary.main" }}>
             <ClipLoader color="inherit" size={150} loading={true} />
           </Box>
         ) : (
-          <Stack direction="row" spacing={2} justifyContent="space-around" flexWrap="wrap">
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="space-around"
+            flexWrap="wrap"
+          >
             {books?.map((book) => (
               <Card
-                key={book.id} onClick={() => handleClickBook(book.id)}
+                key={book.id}
+                onClick={() => handleClickBook(book.id)}
                 sx={{
                   width: "12rem",
                   height: "27rem",
                   marginBottom: "2rem",
-                }}>
+                }}
+              >
                 <CardActionArea>
                   <CardMedia
                     component="img"
@@ -112,7 +131,6 @@ const HomePage = () => {
                     <Typography gutterBottom variant="h5" component="div">
                       {`${book.title}`}
                     </Typography>
-
                   </CardContent>
                 </CardActionArea>
               </Card>
