@@ -12,20 +12,17 @@ import {
 } from "@mui/material";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
-// import { toast } from "react-toastify";
-// import api from "../apiService";
 import { useDispatch, useSelector } from "react-redux";
 import { getReadingList, removeBook } from "../components/book/bookSlice";
 
 const BACKEND_API = process.env.REACT_APP_BACKEND_API;
 
 const ReadingPage = () => {
-  // const [books, setBooks] = useState([]);
-  // const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const readinglist = useSelector((state) => state.book.readinglist);
   const status = useSelector((state) => state.book.status);
   const [removedBookId, setRemovedBookId] = useState("");
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const navigate = useNavigate();
 
   const handleClickBook = (bookId) => {
@@ -37,58 +34,41 @@ const ReadingPage = () => {
   };
 
   useEffect(() => {
-    if (removedBookId) return;
     dispatch(getReadingList());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (removedBookId) {
+      dispatch(removeBook(removedBookId)).then(() => {
+        setRemovedBookId("");
+      });
+    }
   }, [dispatch, removedBookId]);
 
   useEffect(() => {
-    if (!removedBookId) return;
-    dispatch(removeBook(removedBookId));
-    setRemovedBookId("");
-  }, [dispatch, removedBookId]);
-
-  console.log(readinglist);
-
-  // useEffect(() => {
-  //   if (removedBookId) return;
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const res = await api.get(`/favorites`);
-  //       setBooks(res.data);
-  //     } catch (error) {
-  //       toast(error.message);
-  //     }
-  //     setLoading(false);
-  //   };
-  //   fetchData();
-  // }, [removedBookId]);
-
-  // useEffect(() => {
-  //   if (!removedBookId) return;
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       await api.delete(`/favorites/${removedBookId}`);
-  //       toast.success("The book has been removed");
-  //       setRemovedBookId("");
-  //     } catch (error) {
-  //       toast(error.message);
-  //     }
-  //     setLoading(false);
-  //   };
-  //   fetchData();
-  // }, [removedBookId]);
+    if (readinglist.length === 0) {
+      const timer = setTimeout(() => {
+        setShowEmptyMessage(true);
+      }, 1000);
+      return () => clearTimeout(timer); // Clear the timer if the component unmounts or if readinglist changes
+    } else {
+      setShowEmptyMessage(false);
+    }
+  }, [readinglist]);
 
   return (
     <Container>
       <Typography variant="h3" sx={{ textAlign: "center" }} m={3}>
-        Book Store
+        Reading List
       </Typography>
-      {status ? (
+      {status === "loading" ? (
         <Box sx={{ textAlign: "center", color: "primary.main" }}>
           <ClipLoader color="inherit" size={150} loading={true} />
         </Box>
+      ) : showEmptyMessage ? (
+        <Typography variant="h5" sx={{ textAlign: "center" }} m={3}>
+There is no book you are reading. Please add it here!
+        </Typography>
       ) : (
         <Stack
           direction="row"
@@ -96,7 +76,7 @@ const ReadingPage = () => {
           justifyContent="space-around"
           flexWrap={"wrap"}
         >
-          {readinglist?.map((book) => (
+          {readinglist.map((book) => (
             <Card
               key={book.id}
               sx={{

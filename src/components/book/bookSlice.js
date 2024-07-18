@@ -9,6 +9,7 @@ const initialState = {
   bookDetail: null,
   status: null,
 };
+
 // thêm 1 cuốn sách vào reading list
 export const addReadingList = createAsyncThunk(
   "book/addReadingList",
@@ -18,7 +19,7 @@ export const addReadingList = createAsyncThunk(
   }
 );
 
-//   lấy danh sách sách yêu thích từ API
+// lấy danh sách sách yêu thích từ API
 export const getReadingList = createAsyncThunk(
   "book/getReadingList",
   async () => {
@@ -39,9 +40,9 @@ export const getBookDetail = createAsyncThunk(
 // Xoá 1 book khỏi reading list
 export const removeBook = createAsyncThunk(
   "book/removeBook",
-  async (removedBookId) => {
+  async (removedBookId, thunkAPI) => {
     const response = await api.delete(`/favorites/${removedBookId}`);
-    console.log(response);
+    thunkAPI.dispatch(getReadingList()); // Fetch updated reading list after removal
     return response.data;
   }
 );
@@ -58,25 +59,25 @@ const bookSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchData.pending, (state) => {
-        state.status = "loading"; //cập nhật trạng thái loading
+        state.status = "loading"; // cập nhật trạng thái loading
       })
       .addCase(fetchData.fulfilled, (state, action) => {
-        //cập nhật trạng thái và dữ liệu sách khi hành động thành công
+        // cập nhật trạng thái và dữ liệu sách khi hành động thành công
         state.status = null;
         state.books = action.payload;
       })
       .addCase(fetchData.rejected, (state) => {
-        // cập nhật trạng thái khi lấy data ko thành công
+        // cập nhật trạng thái khi lấy data không thành công
         state.status = "Failed to fetch data";
       });
 
     // Xử lý trạng thái thành công và thất bại của hành động addReadingList, hiển thị thông báo
     builder
-      .addCase(addReadingList.fulfilled, (action) => {
+      .addCase(addReadingList.fulfilled, (state, action) => {
         console.log(action.payload);
         toast.success("The book has been added to the reading list!");
       })
-      .addCase(addReadingList.rejected, (action) => {
+      .addCase(addReadingList.rejected, () => {
         toast.error("Cannot proceed. The book has already been added!");
       });
 
@@ -98,15 +99,19 @@ const bookSlice = createSlice({
       .addCase(removeBook.pending, (state) => {
         state.status = "pending";
       })
-      .addCase(removeBook.fulfilled, (state) => {
+      .addCase(removeBook.fulfilled, (state, action) => {
         state.status = null;
+        // Remove the book from reading list state
+        state.readinglist = state.readinglist.filter(
+          (book) => book.id !== action.meta.arg
+        );
         toast.success("The book has been removed");
       })
-      .addCase(removeBook.rejected, (state) => {
-        state.status = "Failed to remove book";
+      .addCase(removeBook.rejected, () => {
+        toast.error("Failed to remove book");
       });
 
-    //  Xu ly trang thai cho hanh dong lay chi tiet book
+    // Xử lý trạng thái cho hành động lấy chi tiết sách
     builder
       .addCase(getBookDetail.pending, (state) => {
         state.status = "pending";
